@@ -22,7 +22,8 @@ import { CouponsModule } from './coupons/coupons.module';
     CategoriesModule,
     ProductsModule,
     TransactionsModule,
-    CouponsModule],
+    CouponsModule
+  ],
   controllers: [AppController],
   providers: [AppService]
 })
