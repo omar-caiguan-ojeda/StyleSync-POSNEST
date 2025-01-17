@@ -2,8 +2,9 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coupon } from './entities/coupon.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { endOfDay, isAfter } from 'date-fns';
 
 
 @Injectable()
@@ -44,4 +45,25 @@ export class CouponsService {
     await this.couponRepository.remove(coupon)
     return { message: `El cupón de descuento con el ID: ${id}, fué eliminado con éxito.` }
   }
+
+  
+  async applyCoupon(name: string) {
+    const coupon = await this.couponRepository.findOneBy({ name })
+
+    if(!coupon) {
+      throw new NotFoundException(`El cupón: ${name}, no existe`) 
+    }
+
+    const currentDate = new Date()
+    const expirationDate = endOfDay(coupon.expirationDate)
+
+    if(isAfter(currentDate, expirationDate)) {
+      throw new UnprocessableEntityException(`El cupón: ${name}, ya expiró.`)
+    }
+
+    return {
+      message: `El cupón: ${name}, es válido.`,
+      ...coupon
+    }
+  } 
 }
